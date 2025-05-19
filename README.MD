@@ -55,6 +55,7 @@ This project controls two stepper motors using an ATmega32U4-based microcontroll
 
 ## 🧪 Usage
 
-In `main.c`, select the acceleration profile with:
-```c
-#define USE_TRAPEZOID 1  // or 0 for S-curve
+V1 - Implemented Both velocity curves for a single motor
+V2 - Implemented Both velocity curves for both single motor
+V3 - Added motion_control which implements moving a given distance according to a given velocity curve
+V4 - 
