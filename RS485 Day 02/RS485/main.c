@@ -6,11 +6,9 @@
 
 #define RE_DE_PIN PD4
 #define LED_PIN   PB0   // Optional TX LED
-
 #define MAX_LEN 32
 char buffer[MAX_LEN];
 uint8_t idx = 0;
-
 
 void blink_led() {
 	PORTB |= (1 << LED_PIN);
@@ -20,7 +18,7 @@ void blink_led() {
 
 int main(void) {
 	DDRD |= (1 << RE_DE_PIN);   // RE/DE pin as output
-	DDRB |= (1 << LED_PIN);     // TX LED pin as output (optional)
+	DDRB |= (1 << LED_PIN);     // TX LED pin as output
 	PORTD &= ~(1 << RE_DE_PIN); // Start in receive mode
 
 	usart1_init(9600);
@@ -31,26 +29,29 @@ int main(void) {
 
 			if (idx < MAX_LEN - 1) {
 				buffer[idx++] = c;
-			}
 
-			if (c == '\n') {  // End of message
-				buffer[idx] = '\0';  // Null-terminate
+				if (c == '\n') {
+					buffer[idx] = '\0';  // Null-terminate
 
-				blink_led();  // Optional: show activity on LED
+					// Echo full message
+					UCSR1A |= (1 << TXC1);
+					PORTD |= (1 << RE_DE_PIN);
+					_delay_us(10);
 
-				// Echo back full message
-				UCSR1A |= (1 << TXC1);
-				PORTD |= (1 << RE_DE_PIN);
-				_delay_us(10);
-				for (uint8_t i = 0; i < idx; i++) {
-					usart1_write(buffer[i]);
-					while (!(UCSR1A & (1 << TXC1)));
+					for (uint8_t i = 0; i < idx+1; i++) {
+						usart1_write(buffer[i]);
+						while (!(UCSR1A & (1 << TXC1)));
+					}
+
+					_delay_us(10);
+					PORTD &= ~(1 << RE_DE_PIN);
+					idx = 0;
 				}
-				_delay_us(10);
-				PORTD &= ~(1 << RE_DE_PIN);
-
-				idx = 0;  // Reset buffer
+				} else {
+				idx = 0; // Overflow protection
 			}
 		}
 	}
+
+
 }
