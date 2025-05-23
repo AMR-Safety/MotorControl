@@ -11,21 +11,21 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   3 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  00000a88  2**2
                   CONTENTS, READONLY
-  4 .debug_aranges 00000128  00000000  00000000  00000ac8  2**0
+  4 .debug_aranges 00000130  00000000  00000000  00000ac8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .debug_info   00001934  00000000  00000000  00000bf0  2**0
+  5 .debug_info   000019b0  00000000  00000000  00000bf8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_abbrev 00000eea  00000000  00000000  00002524  2**0
+  6 .debug_abbrev 00000f0b  00000000  00000000  000025a8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_line   00000b14  00000000  00000000  0000340e  2**0
+  7 .debug_line   00000b5c  00000000  00000000  000034b3  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_frame  00000364  00000000  00000000  00003f24  2**2
+  8 .debug_frame  000003cc  00000000  00000000  00004010  2**2
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_str    00000774  00000000  00000000  00004288  2**0
+  9 .debug_str    000007e1  00000000  00000000  000043dc  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_loc    00000e4d  00000000  00000000  000049fc  2**0
+ 10 .debug_loc    0000104d  00000000  00000000  00004bbd  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_ranges 000000c8  00000000  00000000  00005849  2**0
+ 11 .debug_ranges 000000e8  00000000  00000000  00005c0a  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -193,7 +193,7 @@ void setup_pins_motor2(void) {
 00000130 <main>:
 
 #include "motion_control.h"
-#define WHEEL_RADIUS 0.06f
+
 
 int main(void) {
 	setup_pins_motor1();
@@ -214,12 +214,6 @@ int main(void) {
  14e:	ff cf       	rjmp	.-2      	; 0x14e <main+0x1e>
 
 00000150 <move_distance>:
-#include <math.h>
-
-#define WHEEL_RADIUS 0.06f
-#define STEP_ANGLE   (2.0f * M_PI / STEPS_PER_REV)
-
-void move_distance(float distance_m, float omega_target, uint8_t use_trapezoid) {
  150:	8f 92       	push	r8
  152:	9f 92       	push	r9
  154:	af 92       	push	r10
@@ -231,23 +225,17 @@ void move_distance(float distance_m, float omega_target, uint8_t use_trapezoid) 
  160:	0f 93       	push	r16
  162:	49 01       	movw	r8, r18
  164:	5a 01       	movw	r10, r20
-	float wheel_circ = 2.0f * M_PI * WHEEL_RADIUS;
-	float rotations = distance_m / wheel_circ;
  166:	2b ef       	ldi	r18, 0xFB	; 251
  168:	34 e0       	ldi	r19, 0x04	; 4
- 16a:	41 ec       	ldi	r20, 0xC1	; 193
+ 16a:	41 e4       	ldi	r20, 0x41	; 65
  16c:	5e e3       	ldi	r21, 0x3E	; 62
  16e:	0e 94 3b 03 	call	0x676	; 0x676 <__divsf3>
-	uint32_t total_steps = (uint32_t)(rotations * STEPS_PER_REV);
  172:	20 e0       	ldi	r18, 0x00	; 0
  174:	30 e0       	ldi	r19, 0x00	; 0
  176:	48 e4       	ldi	r20, 0x48	; 72
  178:	54 e4       	ldi	r21, 0x44	; 68
  17a:	0e 94 93 04 	call	0x926	; 0x926 <__mulsf3>
  17e:	0e 94 ad 03 	call	0x75a	; 0x75a <__fixunssfsi>
-
-	uint16_t accel_steps = (use_trapezoid) ? TRAPEZOID_STEPS : SCURVE_STEPS;
-	uint32_t cruise_steps = (total_steps > 2 * accel_steps) ? (total_steps - 2 * accel_steps) : 0;
  182:	65 36       	cpi	r22, 0x65	; 101
  184:	71 05       	cpc	r23, r1
  186:	81 05       	cpc	r24, r1
@@ -264,58 +252,35 @@ void move_distance(float distance_m, float omega_target, uint8_t use_trapezoid) 
  19c:	c1 2c       	mov	r12, r1
  19e:	d1 2c       	mov	r13, r1
  1a0:	76 01       	movw	r14, r12
-
-	// Ramp Up
-	if (use_trapezoid) {
  1a2:	00 23       	and	r16, r16
  1a4:	29 f0       	breq	.+10     	; 0x1b0 <move_distance+0x60>
-		ramp_up_trapezoid(omega_target);
  1a6:	c5 01       	movw	r24, r10
  1a8:	b4 01       	movw	r22, r8
  1aa:	0e 94 d6 01 	call	0x3ac	; 0x3ac <ramp_up_trapezoid>
  1ae:	04 c0       	rjmp	.+8      	; 0x1b8 <move_distance+0x68>
-		} else {
-		ramp_up_scurve(omega_target);
  1b0:	c5 01       	movw	r24, r10
  1b2:	b4 01       	movw	r22, r8
  1b4:	0e 94 53 01 	call	0x2a6	; 0x2a6 <ramp_up_scurve>
-	}
-
-	// Cruise at constant speed
-	set_angular_velocity_motor1(omega_target);
  1b8:	c5 01       	movw	r24, r10
  1ba:	b4 01       	movw	r22, r8
  1bc:	0e 94 bb 02 	call	0x576	; 0x576 <set_angular_velocity_motor1>
-	set_angular_velocity_motor2(omega_target);
  1c0:	c5 01       	movw	r24, r10
  1c2:	b4 01       	movw	r22, r8
  1c4:	0e 94 c2 02 	call	0x584	; 0x584 <set_angular_velocity_motor2>
-
-	for (uint32_t i = 0; i < cruise_steps; i++) {
  1c8:	40 e0       	ldi	r20, 0x00	; 0
  1ca:	50 e0       	ldi	r21, 0x00	; 0
  1cc:	ba 01       	movw	r22, r20
  1ce:	0e c0       	rjmp	.+28     	; 0x1ec <move_distance+0x9c>
-		while (!(TIFR1 & (1 << OCF1A))) {}
  1d0:	b1 9b       	sbis	0x16, 1	; 22
  1d2:	fe cf       	rjmp	.-4      	; 0x1d0 <move_distance+0x80>
-		TIFR1 |= (1 << OCF1A);
  1d4:	86 b3       	in	r24, 0x16	; 22
  1d6:	82 60       	ori	r24, 0x02	; 2
  1d8:	86 bb       	out	0x16, r24	; 22
-		while (!(TIFR3 & (1 << OCF3A))) {}
  1da:	c1 9b       	sbis	0x18, 1	; 24
  1dc:	fe cf       	rjmp	.-4      	; 0x1da <move_distance+0x8a>
-		TIFR3 |= (1 << OCF3A);
  1de:	88 b3       	in	r24, 0x18	; 24
  1e0:	82 60       	ori	r24, 0x02	; 2
  1e2:	88 bb       	out	0x18, r24	; 24
-
-	// Cruise at constant speed
-	set_angular_velocity_motor1(omega_target);
-	set_angular_velocity_motor2(omega_target);
-
-	for (uint32_t i = 0; i < cruise_steps; i++) {
  1e4:	4f 5f       	subi	r20, 0xFF	; 255
  1e6:	5f 4f       	sbci	r21, 0xFF	; 255
  1e8:	6f 4f       	sbci	r22, 0xFF	; 255
@@ -325,38 +290,23 @@ void move_distance(float distance_m, float omega_target, uint8_t use_trapezoid) 
  1f0:	6e 05       	cpc	r22, r14
  1f2:	7f 05       	cpc	r23, r15
  1f4:	68 f3       	brcs	.-38     	; 0x1d0 <move_distance+0x80>
-		while (!(TIFR3 & (1 << OCF3A))) {}
-		TIFR3 |= (1 << OCF3A);
-	}
-
-	// Ramp Down
-	if (use_trapezoid) {
  1f6:	00 23       	and	r16, r16
  1f8:	29 f0       	breq	.+10     	; 0x204 <move_distance+0xb4>
-		ramp_down_trapezoid(omega_target);
  1fa:	c5 01       	movw	r24, r10
  1fc:	b4 01       	movw	r22, r8
  1fe:	0e 94 16 02 	call	0x42c	; 0x42c <ramp_down_trapezoid>
  202:	04 c0       	rjmp	.+8      	; 0x20c <move_distance+0xbc>
-		} else {
-		ramp_down_scurve(omega_target);
  204:	c5 01       	movw	r24, r10
  206:	b4 01       	movw	r22, r8
  208:	0e 94 95 01 	call	0x32a	; 0x32a <ramp_down_scurve>
-	}
-
-	// Stop motors
-	set_angular_velocity_motor1(0);
  20c:	60 e0       	ldi	r22, 0x00	; 0
  20e:	70 e0       	ldi	r23, 0x00	; 0
  210:	cb 01       	movw	r24, r22
  212:	0e 94 bb 02 	call	0x576	; 0x576 <set_angular_velocity_motor1>
-	set_angular_velocity_motor2(0);
  216:	60 e0       	ldi	r22, 0x00	; 0
  218:	70 e0       	ldi	r23, 0x00	; 0
  21a:	cb 01       	movw	r24, r22
  21c:	0e 94 c2 02 	call	0x584	; 0x584 <set_angular_velocity_motor2>
-}
  220:	0f 91       	pop	r16
  222:	ff 90       	pop	r15
  224:	ef 90       	pop	r14
@@ -369,12 +319,6 @@ void move_distance(float distance_m, float omega_target, uint8_t use_trapezoid) 
  232:	08 95       	ret
 
 00000234 <s_curve_profile>:
-#include "velocity.h"
-
-#include <util/delay.h>
-#include <math.h>
-
-static float s_curve_profile(float x) {
  234:	8f 92       	push	r8
  236:	9f 92       	push	r9
  238:	af 92       	push	r10
@@ -385,7 +329,6 @@ static float s_curve_profile(float x) {
  242:	ff 92       	push	r15
  244:	6b 01       	movw	r12, r22
  246:	7c 01       	movw	r14, r24
-	return 3 * x * x - 2 * x * x * x;
  248:	20 e0       	ldi	r18, 0x00	; 0
  24a:	30 e0       	ldi	r19, 0x00	; 0
  24c:	40 e4       	ldi	r20, 0x40	; 64
@@ -418,7 +361,6 @@ static float s_curve_profile(float x) {
  28c:	c5 01       	movw	r24, r10
  28e:	b4 01       	movw	r22, r8
  290:	0e 94 c9 02 	call	0x592	; 0x592 <__subsf3>
-}
  294:	ff 90       	pop	r15
  296:	ef 90       	pop	r14
  298:	df 90       	pop	r13
@@ -430,8 +372,6 @@ static float s_curve_profile(float x) {
  2a4:	08 95       	ret
 
 000002a6 <ramp_up_scurve>:
-
-void ramp_up_scurve(float target_omega) {
  2a6:	8f 92       	push	r8
  2a8:	9f 92       	push	r9
  2aa:	af 92       	push	r10
@@ -444,11 +384,9 @@ void ramp_up_scurve(float target_omega) {
  2b8:	df 93       	push	r29
  2ba:	4b 01       	movw	r8, r22
  2bc:	5c 01       	movw	r10, r24
-	for (int i = 1; i <= SCURVE_STEPS; i++) {
  2be:	c1 e0       	ldi	r28, 0x01	; 1
  2c0:	d0 e0       	ldi	r29, 0x00	; 0
  2c2:	25 c0       	rjmp	.+74     	; 0x30e <ramp_up_scurve+0x68>
-		float x = (float)i / SCURVE_STEPS;
  2c4:	be 01       	movw	r22, r28
  2c6:	0d 2e       	mov	r0, r29
  2c8:	00 0c       	add	r0, r0
@@ -460,16 +398,13 @@ void ramp_up_scurve(float target_omega) {
  2d6:	48 e4       	ldi	r20, 0x48	; 72
  2d8:	52 e4       	ldi	r21, 0x42	; 66
  2da:	0e 94 3b 03 	call	0x676	; 0x676 <__divsf3>
-		float omega = s_curve_profile(x) * target_omega;
  2de:	0e 94 1a 01 	call	0x234	; 0x234 <s_curve_profile>
  2e2:	a5 01       	movw	r20, r10
  2e4:	94 01       	movw	r18, r8
  2e6:	0e 94 93 04 	call	0x926	; 0x926 <__mulsf3>
  2ea:	6b 01       	movw	r12, r22
  2ec:	7c 01       	movw	r14, r24
-		set_angular_velocity_motor1(omega);
  2ee:	0e 94 bb 02 	call	0x576	; 0x576 <set_angular_velocity_motor1>
-		set_angular_velocity_motor2(omega);
  2f2:	c7 01       	movw	r24, r14
  2f4:	b6 01       	movw	r22, r12
  2f6:	0e 94 c2 02 	call	0x584	; 0x584 <set_angular_velocity_motor2>
@@ -488,22 +423,10 @@ void ramp_up_scurve(float target_omega) {
  306:	e1 f7       	brne	.-8      	; 0x300 <ramp_up_scurve+0x5a>
  308:	00 c0       	rjmp	.+0      	; 0x30a <ramp_up_scurve+0x64>
  30a:	00 00       	nop
-static float s_curve_profile(float x) {
-	return 3 * x * x - 2 * x * x * x;
-}
-
-void ramp_up_scurve(float target_omega) {
-	for (int i = 1; i <= SCURVE_STEPS; i++) {
  30c:	21 96       	adiw	r28, 0x01	; 1
  30e:	c3 33       	cpi	r28, 0x33	; 51
  310:	d1 05       	cpc	r29, r1
  312:	c4 f2       	brlt	.-80     	; 0x2c4 <ramp_up_scurve+0x1e>
-		float omega = s_curve_profile(x) * target_omega;
-		set_angular_velocity_motor1(omega);
-		set_angular_velocity_motor2(omega);
-		_delay_ms(SCURVE_DELAY_MS);
-	}
-}
  314:	df 91       	pop	r29
  316:	cf 91       	pop	r28
  318:	ff 90       	pop	r15
@@ -517,8 +440,6 @@ void ramp_up_scurve(float target_omega) {
  328:	08 95       	ret
 
 0000032a <ramp_down_scurve>:
-
-void ramp_down_scurve(float target_omega) {
  32a:	8f 92       	push	r8
  32c:	9f 92       	push	r9
  32e:	af 92       	push	r10
@@ -531,11 +452,9 @@ void ramp_down_scurve(float target_omega) {
  33c:	df 93       	push	r29
  33e:	4b 01       	movw	r8, r22
  340:	5c 01       	movw	r10, r24
-	for (int i = SCURVE_STEPS - 1; i >= 0; i--) {
  342:	c1 e3       	ldi	r28, 0x31	; 49
  344:	d0 e0       	ldi	r29, 0x00	; 0
  346:	25 c0       	rjmp	.+74     	; 0x392 <ramp_down_scurve+0x68>
-		float x = (float)i / SCURVE_STEPS;
  348:	be 01       	movw	r22, r28
  34a:	0d 2e       	mov	r0, r29
  34c:	00 0c       	add	r0, r0
@@ -547,16 +466,13 @@ void ramp_down_scurve(float target_omega) {
  35a:	48 e4       	ldi	r20, 0x48	; 72
  35c:	52 e4       	ldi	r21, 0x42	; 66
  35e:	0e 94 3b 03 	call	0x676	; 0x676 <__divsf3>
-		float omega = s_curve_profile(x) * target_omega;
  362:	0e 94 1a 01 	call	0x234	; 0x234 <s_curve_profile>
  366:	a5 01       	movw	r20, r10
  368:	94 01       	movw	r18, r8
  36a:	0e 94 93 04 	call	0x926	; 0x926 <__mulsf3>
  36e:	6b 01       	movw	r12, r22
  370:	7c 01       	movw	r14, r24
-		set_angular_velocity_motor1(omega);
  372:	0e 94 bb 02 	call	0x576	; 0x576 <set_angular_velocity_motor1>
-		set_angular_velocity_motor2(omega);
  376:	c7 01       	movw	r24, r14
  378:	b6 01       	movw	r22, r12
  37a:	0e 94 c2 02 	call	0x584	; 0x584 <set_angular_velocity_motor2>
@@ -569,21 +485,9 @@ void ramp_down_scurve(float target_omega) {
  38a:	e1 f7       	brne	.-8      	; 0x384 <ramp_down_scurve+0x5a>
  38c:	00 c0       	rjmp	.+0      	; 0x38e <ramp_down_scurve+0x64>
  38e:	00 00       	nop
-		_delay_ms(SCURVE_DELAY_MS);
-	}
-}
-
-void ramp_down_scurve(float target_omega) {
-	for (int i = SCURVE_STEPS - 1; i >= 0; i--) {
  390:	21 97       	sbiw	r28, 0x01	; 1
  392:	dd 23       	and	r29, r29
  394:	cc f6       	brge	.-78     	; 0x348 <ramp_down_scurve+0x1e>
-		float omega = s_curve_profile(x) * target_omega;
-		set_angular_velocity_motor1(omega);
-		set_angular_velocity_motor2(omega);
-		_delay_ms(SCURVE_DELAY_MS);
-	}
-}
  396:	df 91       	pop	r29
  398:	cf 91       	pop	r28
  39a:	ff 90       	pop	r15
@@ -597,12 +501,6 @@ void ramp_down_scurve(float target_omega) {
  3aa:	08 95       	ret
 
 000003ac <ramp_up_trapezoid>:
-#include "trapezoid.h"
-#include "velocity.h"
-
-#include <util/delay.h>
-
-void ramp_up_trapezoid(float target_omega) {
  3ac:	8f 92       	push	r8
  3ae:	9f 92       	push	r9
  3b0:	af 92       	push	r10
@@ -615,11 +513,9 @@ void ramp_up_trapezoid(float target_omega) {
  3be:	df 93       	push	r29
  3c0:	4b 01       	movw	r8, r22
  3c2:	5c 01       	movw	r10, r24
-	for (int i = 1; i <= TRAPEZOID_STEPS; i++) {
  3c4:	c1 e0       	ldi	r28, 0x01	; 1
  3c6:	d0 e0       	ldi	r29, 0x00	; 0
  3c8:	23 c0       	rjmp	.+70     	; 0x410 <__EEPROM_REGION_LENGTH__+0x10>
-		float omega = (target_omega * i) / TRAPEZOID_STEPS;
  3ca:	be 01       	movw	r22, r28
  3cc:	0d 2e       	mov	r0, r29
  3ce:	00 0c       	add	r0, r0
@@ -636,9 +532,7 @@ void ramp_up_trapezoid(float target_omega) {
  3e8:	0e 94 3b 03 	call	0x676	; 0x676 <__divsf3>
  3ec:	6b 01       	movw	r12, r22
  3ee:	7c 01       	movw	r14, r24
-		set_angular_velocity_motor1(omega);
  3f0:	0e 94 bb 02 	call	0x576	; 0x576 <set_angular_velocity_motor1>
-		set_angular_velocity_motor2(omega);
  3f4:	c7 01       	movw	r24, r14
  3f6:	b6 01       	movw	r22, r12
  3f8:	0e 94 c2 02 	call	0x584	; 0x584 <set_angular_velocity_motor2>
@@ -651,22 +545,10 @@ void ramp_up_trapezoid(float target_omega) {
  408:	e1 f7       	brne	.-8      	; 0x402 <__EEPROM_REGION_LENGTH__+0x2>
  40a:	00 c0       	rjmp	.+0      	; 0x40c <__EEPROM_REGION_LENGTH__+0xc>
  40c:	00 00       	nop
-#include "velocity.h"
-
-#include <util/delay.h>
-
-void ramp_up_trapezoid(float target_omega) {
-	for (int i = 1; i <= TRAPEZOID_STEPS; i++) {
  40e:	21 96       	adiw	r28, 0x01	; 1
  410:	c3 33       	cpi	r28, 0x33	; 51
  412:	d1 05       	cpc	r29, r1
  414:	d4 f2       	brlt	.-76     	; 0x3ca <ramp_up_trapezoid+0x1e>
-		float omega = (target_omega * i) / TRAPEZOID_STEPS;
-		set_angular_velocity_motor1(omega);
-		set_angular_velocity_motor2(omega);
-		_delay_ms(TRAPEZOID_DELAY_MS);
-	}
-}
  416:	df 91       	pop	r29
  418:	cf 91       	pop	r28
  41a:	ff 90       	pop	r15
@@ -680,8 +562,6 @@ void ramp_up_trapezoid(float target_omega) {
  42a:	08 95       	ret
 
 0000042c <ramp_down_trapezoid>:
-
-void ramp_down_trapezoid(float target_omega) {
  42c:	8f 92       	push	r8
  42e:	9f 92       	push	r9
  430:	af 92       	push	r10
@@ -694,11 +574,9 @@ void ramp_down_trapezoid(float target_omega) {
  43e:	df 93       	push	r29
  440:	4b 01       	movw	r8, r22
  442:	5c 01       	movw	r10, r24
-	for (int i = TRAPEZOID_STEPS - 1; i >= 0; i--) {
  444:	c1 e3       	ldi	r28, 0x31	; 49
  446:	d0 e0       	ldi	r29, 0x00	; 0
  448:	23 c0       	rjmp	.+70     	; 0x490 <ramp_down_trapezoid+0x64>
-		float omega = (target_omega * i) / TRAPEZOID_STEPS;
  44a:	be 01       	movw	r22, r28
  44c:	0d 2e       	mov	r0, r29
  44e:	00 0c       	add	r0, r0
@@ -715,9 +593,7 @@ void ramp_down_trapezoid(float target_omega) {
  468:	0e 94 3b 03 	call	0x676	; 0x676 <__divsf3>
  46c:	6b 01       	movw	r12, r22
  46e:	7c 01       	movw	r14, r24
-		set_angular_velocity_motor1(omega);
  470:	0e 94 bb 02 	call	0x576	; 0x576 <set_angular_velocity_motor1>
-		set_angular_velocity_motor2(omega);
  474:	c7 01       	movw	r24, r14
  476:	b6 01       	movw	r22, r12
  478:	0e 94 c2 02 	call	0x584	; 0x584 <set_angular_velocity_motor2>
@@ -730,21 +606,9 @@ void ramp_down_trapezoid(float target_omega) {
  488:	e1 f7       	brne	.-8      	; 0x482 <ramp_down_trapezoid+0x56>
  48a:	00 c0       	rjmp	.+0      	; 0x48c <ramp_down_trapezoid+0x60>
  48c:	00 00       	nop
-		_delay_ms(TRAPEZOID_DELAY_MS);
-	}
-}
-
-void ramp_down_trapezoid(float target_omega) {
-	for (int i = TRAPEZOID_STEPS - 1; i >= 0; i--) {
  48e:	21 97       	sbiw	r28, 0x01	; 1
  490:	dd 23       	and	r29, r29
  492:	dc f6       	brge	.-74     	; 0x44a <ramp_down_trapezoid+0x1e>
-		float omega = (target_omega * i) / TRAPEZOID_STEPS;
-		set_angular_velocity_motor1(omega);
-		set_angular_velocity_motor2(omega);
-		_delay_ms(TRAPEZOID_DELAY_MS);
-	}
-}
  494:	df 91       	pop	r29
  496:	cf 91       	pop	r28
  498:	ff 90       	pop	r15
@@ -758,37 +622,26 @@ void ramp_down_trapezoid(float target_omega) {
  4a8:	08 95       	ret
 
 000004aa <angular_velocity_to_rpm>:
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-float angular_velocity_to_rpm(float omega) {
-	return omega * (60.0f / (2.0f * M_PI));
  4aa:	2b ee       	ldi	r18, 0xEB	; 235
  4ac:	39 ec       	ldi	r19, 0xC9	; 201
  4ae:	48 e1       	ldi	r20, 0x18	; 24
  4b0:	51 e4       	ldi	r21, 0x41	; 65
  4b2:	0e 94 93 04 	call	0x926	; 0x926 <__mulsf3>
-}
  4b6:	08 95       	ret
 
 000004b8 <rpm_to_ocr>:
-
-uint16_t rpm_to_ocr(float rpm) {
  4b8:	cf 92       	push	r12
  4ba:	df 92       	push	r13
  4bc:	ef 92       	push	r14
  4be:	ff 92       	push	r15
  4c0:	6b 01       	movw	r12, r22
  4c2:	7c 01       	movw	r14, r24
-	if (rpm <= 0) return 65535;
  4c4:	20 e0       	ldi	r18, 0x00	; 0
  4c6:	30 e0       	ldi	r19, 0x00	; 0
  4c8:	a9 01       	movw	r20, r18
  4ca:	0e 94 36 03 	call	0x66c	; 0x66c <__cmpsf2>
  4ce:	18 16       	cp	r1, r24
  4d0:	ac f5       	brge	.+106    	; 0x53c <rpm_to_ocr+0x84>
-	float steps_per_sec = (rpm * STEPS_PER_REV) / 60.0f;
  4d2:	20 e0       	ldi	r18, 0x00	; 0
  4d4:	30 e0       	ldi	r19, 0x00	; 0
  4d6:	48 e4       	ldi	r20, 0x48	; 72
@@ -801,7 +654,6 @@ uint16_t rpm_to_ocr(float rpm) {
  4e6:	40 e7       	ldi	r20, 0x70	; 112
  4e8:	52 e4       	ldi	r21, 0x42	; 66
  4ea:	0e 94 3b 03 	call	0x676	; 0x676 <__divsf3>
-	float ocr = (float)F_CPU / (PRESCALER * steps_per_sec);
  4ee:	20 e0       	ldi	r18, 0x00	; 0
  4f0:	30 e0       	ldi	r19, 0x00	; 0
  4f2:	40 e0       	ldi	r20, 0x00	; 0
@@ -816,7 +668,6 @@ uint16_t rpm_to_ocr(float rpm) {
  506:	0e 94 3b 03 	call	0x676	; 0x676 <__divsf3>
  50a:	6b 01       	movw	r12, r22
  50c:	7c 01       	movw	r14, r24
-	if (ocr > 65535) ocr = 65535;
  50e:	20 e0       	ldi	r18, 0x00	; 0
  510:	3f ef       	ldi	r19, 0xFF	; 255
  512:	4f e7       	ldi	r20, 0x7F	; 127
@@ -833,25 +684,13 @@ uint16_t rpm_to_ocr(float rpm) {
  52a:	f7 e4       	ldi	r31, 0x47	; 71
  52c:	ff 2e       	mov	r15, r31
  52e:	f0 2d       	mov	r31, r0
-	return (uint16_t)ocr;
  530:	c7 01       	movw	r24, r14
  532:	b6 01       	movw	r22, r12
  534:	0e 94 ad 03 	call	0x75a	; 0x75a <__fixunssfsi>
  538:	cb 01       	movw	r24, r22
  53a:	02 c0       	rjmp	.+4      	; 0x540 <rpm_to_ocr+0x88>
-float angular_velocity_to_rpm(float omega) {
-	return omega * (60.0f / (2.0f * M_PI));
-}
-
-uint16_t rpm_to_ocr(float rpm) {
-	if (rpm <= 0) return 65535;
  53c:	8f ef       	ldi	r24, 0xFF	; 255
  53e:	9f ef       	ldi	r25, 0xFF	; 255
-	float steps_per_sec = (rpm * STEPS_PER_REV) / 60.0f;
-	float ocr = (float)F_CPU / (PRESCALER * steps_per_sec);
-	if (ocr > 65535) ocr = 65535;
-	return (uint16_t)ocr;
-}
  540:	ff 90       	pop	r15
  542:	ef 90       	pop	r14
  544:	df 90       	pop	r13
@@ -859,55 +698,32 @@ uint16_t rpm_to_ocr(float rpm) {
  548:	08 95       	ret
 
 0000054a <setup_timer1>:
-
-void setup_timer1(uint16_t ocr_value) {
-	TCCR1A = (1 << COM1A0);
  54a:	20 e4       	ldi	r18, 0x40	; 64
  54c:	20 93 80 00 	sts	0x0080, r18	; 0x800080 <__TEXT_REGION_LENGTH__+0x7f8080>
-	TCCR1B = (1 << WGM12) | (1 << CS11);
  550:	2a e0       	ldi	r18, 0x0A	; 10
  552:	20 93 81 00 	sts	0x0081, r18	; 0x800081 <__TEXT_REGION_LENGTH__+0x7f8081>
-	OCR1A = ocr_value;
  556:	90 93 89 00 	sts	0x0089, r25	; 0x800089 <__TEXT_REGION_LENGTH__+0x7f8089>
  55a:	80 93 88 00 	sts	0x0088, r24	; 0x800088 <__TEXT_REGION_LENGTH__+0x7f8088>
  55e:	08 95       	ret
 
 00000560 <setup_timer3>:
-}
-
-void setup_timer3(uint16_t ocr_value) {
-	TCCR3A = (1 << COM3A0);
  560:	20 e4       	ldi	r18, 0x40	; 64
  562:	20 93 90 00 	sts	0x0090, r18	; 0x800090 <__TEXT_REGION_LENGTH__+0x7f8090>
-	TCCR3B = (1 << WGM32) | (1 << CS31);
  566:	2a e0       	ldi	r18, 0x0A	; 10
  568:	20 93 91 00 	sts	0x0091, r18	; 0x800091 <__TEXT_REGION_LENGTH__+0x7f8091>
-	OCR3A = ocr_value;
  56c:	90 93 99 00 	sts	0x0099, r25	; 0x800099 <__TEXT_REGION_LENGTH__+0x7f8099>
  570:	80 93 98 00 	sts	0x0098, r24	; 0x800098 <__TEXT_REGION_LENGTH__+0x7f8098>
  574:	08 95       	ret
 
 00000576 <set_angular_velocity_motor1>:
-}
-
-void set_angular_velocity_motor1(float omega) {
-	float rpm = angular_velocity_to_rpm(omega);
  576:	0e 94 55 02 	call	0x4aa	; 0x4aa <angular_velocity_to_rpm>
-	uint16_t ocr = rpm_to_ocr(rpm);
  57a:	0e 94 5c 02 	call	0x4b8	; 0x4b8 <rpm_to_ocr>
-	setup_timer1(ocr);
  57e:	0e 94 a5 02 	call	0x54a	; 0x54a <setup_timer1>
  582:	08 95       	ret
 
 00000584 <set_angular_velocity_motor2>:
-}
-
-void set_angular_velocity_motor2(float omega) {
-	float rpm = angular_velocity_to_rpm(omega);
  584:	0e 94 55 02 	call	0x4aa	; 0x4aa <angular_velocity_to_rpm>
-	uint16_t ocr = rpm_to_ocr(rpm);
  588:	0e 94 5c 02 	call	0x4b8	; 0x4b8 <rpm_to_ocr>
-	setup_timer3(ocr);
  58c:	0e 94 b0 02 	call	0x560	; 0x560 <setup_timer3>
  590:	08 95       	ret
 

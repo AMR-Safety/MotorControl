@@ -7,7 +7,7 @@
 #include <util/delay.h>
 #include <math.h>
 
-#define WHEEL_RADIUS 0.06f
+#define WHEEL_RADIUS 0.03f
 #define STEP_ANGLE   (2.0f * M_PI / STEPS_PER_REV)
 
 void move_distance(float distance_m, float omega_target, uint8_t use_trapezoid) {
@@ -48,7 +48,7 @@ void move_distance(float distance_m, float omega_target, uint8_t use_trapezoid) 
 	set_angular_velocity_motor2(0);
 }
 
-#define WHEELBASE 0.48f  // distance between left and right wheels (in meters)
+#define WHEELBASE 0.12f  // distance between left and right wheels (in meters)
 
 void turn_angle(float angle_rad, float omega_target, uint8_t use_trapezoid) {
 	float arc = (WHEELBASE / 2.0f) * fabsf(angle_rad);  // distance each wheel travels
@@ -98,8 +98,8 @@ void turn_angle(float angle_rad, float omega_target, uint8_t use_trapezoid) {
 	set_angular_velocity_motor2(0);
 }
 
-#define WHEEL_RADIUS 0.06f  // in meters
-//#define WHEELBASE    0.48f  // distance between wheels (meters)
+#define WHEEL_RADIUS 0.03f  // in meters
+#define WHEELBASE    0.12f  // distance between wheels (meters)
 
 void drive_differential(float vel, float omega) {
 	float w_left  = (vel - (omega * WHEELBASE / 2.0f)) / WHEEL_RADIUS;

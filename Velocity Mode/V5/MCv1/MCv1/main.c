@@ -12,7 +12,7 @@
 //#include "modbus_slave.h"
 
 #include "motion_control.h"
-#define WHEEL_RADIUS 0.06f
+
 
 int main(void) {
 	setup_pins_motor1();

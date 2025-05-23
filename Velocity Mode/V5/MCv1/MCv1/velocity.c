@@ -47,4 +47,26 @@ void set_angular_velocity_motor2(float omega) {
 	setup_timer3(ocr);
 }
 
+/**
+ * Smoothly steps toward a target angular velocity.
+ * Call this every 100 ms to gradually ramp up/down to the new velocity.
+ *
+ * @param current_omega     Current angular velocity [rad/s]
+ * @param target_omega      Desired target angular velocity [rad/s]
+ * @param step_size         How much to change per 100 ms [rad/s]
+ * @return                  Updated angular velocity to apply
+ */
+float step_toward_velocity(float current_omega, float target_omega, float step_size) {
+    float delta = target_omega - current_omega;
+
+    if (fabs(delta) <= step_size) {
+        return target_omega;  // Close enough; jump to target
+    }
+
+    if (delta > 0) {
+        return current_omega + step_size;  // Ramp up
+    } else {
+        return current_omega - step_size;  // Ramp down
+    }
+}
 

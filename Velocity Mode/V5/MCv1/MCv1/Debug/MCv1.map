@@ -67,6 +67,8 @@ Discarded input sections
  .text          0x00000000        0x0 velocity.o
  .data          0x00000000        0x0 velocity.o
  .bss           0x00000000        0x0 velocity.o
+ .text.step_toward_velocity
+                0x00000000       0xdc velocity.o
  .bss.target_velocity_motor2
                 0x00000000        0x4 velocity.o
  .bss.target_velocity_motor1
@@ -627,7 +629,7 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000      0x128
+.debug_aranges  0x00000000      0x130
  *(.debug_aranges)
  .debug_aranges
                 0x00000000       0x38 direction.o
@@ -640,12 +642,12 @@ END GROUP
  .debug_aranges
                 0x000000b8       0x28 trapezoid.o
  .debug_aranges
-                0x000000e0       0x48 velocity.o
+                0x000000e0       0x50 velocity.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x1934
+.debug_info     0x00000000     0x19b0
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x9f4 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega32u4/avr5/crtatmega32u4.o
  .debug_info    0x000009f4      0x111 direction.o
@@ -653,9 +655,9 @@ END GROUP
  .debug_info    0x00000c03      0x58e motion_control.o
  .debug_info    0x00001191      0x2c3 scurve.o
  .debug_info    0x00001454      0x26c trapezoid.o
- .debug_info    0x000016c0      0x274 velocity.o
+ .debug_info    0x000016c0      0x2f0 velocity.o
 
-.debug_abbrev   0x00000000      0xeea
+.debug_abbrev   0x00000000      0xf0b
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x96a C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega32u4/avr5/crtatmega32u4.o
  .debug_abbrev  0x0000096a       0x91 direction.o
@@ -663,9 +665,9 @@ END GROUP
  .debug_abbrev  0x00000a7a       0xee motion_control.o
  .debug_abbrev  0x00000b68      0x152 scurve.o
  .debug_abbrev  0x00000cba      0x11e trapezoid.o
- .debug_abbrev  0x00000dd8      0x112 velocity.o
+ .debug_abbrev  0x00000dd8      0x133 velocity.o
 
-.debug_line     0x00000000      0xb14
+.debug_line     0x00000000      0xb5c
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x19a C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega32u4/avr5/crtatmega32u4.o
  .debug_line    0x0000019a      0x122 direction.o
@@ -673,40 +675,40 @@ END GROUP
  .debug_line    0x0000032a      0x2cc motion_control.o
  .debug_line    0x000005f6      0x1ef scurve.o
  .debug_line    0x000007e5      0x1c2 trapezoid.o
- .debug_line    0x000009a7      0x16d velocity.o
+ .debug_line    0x000009a7      0x1b5 velocity.o
 
-.debug_frame    0x00000000      0x364
+.debug_frame    0x00000000      0x3cc
  *(.debug_frame)
  .debug_frame   0x00000000       0x54 direction.o
  .debug_frame   0x00000054       0x24 main.o
  .debug_frame   0x00000078       0xf4 motion_control.o
  .debug_frame   0x0000016c       0xd4 scurve.o
  .debug_frame   0x00000240       0x9c trapezoid.o
- .debug_frame   0x000002dc       0x88 velocity.o
+ .debug_frame   0x000002dc       0xf0 velocity.o
 
-.debug_str      0x00000000      0x774
+.debug_str      0x00000000      0x7e1
  *(.debug_str)
  .debug_str     0x00000000      0x371 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega32u4/avr5/crtatmega32u4.o
  .debug_str     0x00000371      0x190 direction.o
                                 0x1c4 (size before relaxing)
  .debug_str     0x00000501       0x25 main.o
                                 0x19e (size before relaxing)
- .debug_str     0x00000526      0x13d motion_control.o
-                                0x2de (size before relaxing)
- .debug_str     0x00000663       0x6d scurve.o
-                                0x22f (size before relaxing)
- .debug_str     0x000006d0       0x11 trapezoid.o
-                                0x228 (size before relaxing)
- .debug_str     0x000006e1       0x93 velocity.o
-                                0x23d (size before relaxing)
+ .debug_str     0x00000526      0x172 motion_control.o
+                                0x2d0 (size before relaxing)
+ .debug_str     0x00000698       0x6d scurve.o
+                                0x221 (size before relaxing)
+ .debug_str     0x00000705       0x11 trapezoid.o
+                                0x21a (size before relaxing)
+ .debug_str     0x00000716       0xcb velocity.o
+                                0x27b (size before relaxing)
 
-.debug_loc      0x00000000      0xe4d
+.debug_loc      0x00000000     0x104d
  *(.debug_loc)
  .debug_loc     0x00000000       0x74 direction.o
  .debug_loc     0x00000074      0x561 motion_control.o
  .debug_loc     0x000005d5      0x3c8 scurve.o
  .debug_loc     0x0000099d      0x2cb trapezoid.o
- .debug_loc     0x00000c68      0x1e5 velocity.o
+ .debug_loc     0x00000c68      0x3e5 velocity.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -726,14 +728,14 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000       0xc8
+.debug_ranges   0x00000000       0xe8
  *(.debug_ranges)
  .debug_ranges  0x00000000       0x28 direction.o
  .debug_ranges  0x00000028       0x10 main.o
  .debug_ranges  0x00000038       0x20 motion_control.o
  .debug_ranges  0x00000058       0x20 scurve.o
  .debug_ranges  0x00000078       0x18 trapezoid.o
- .debug_ranges  0x00000090       0x38 velocity.o
+ .debug_ranges  0x00000090       0x58 velocity.o
 
 .debug_macro
  *(.debug_macro)
