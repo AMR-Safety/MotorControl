@@ -686,21 +686,21 @@ END GROUP
  .debug_frame   0x00000240       0x9c trapezoid.o
  .debug_frame   0x000002dc       0xf0 velocity.o
 
-.debug_str      0x00000000      0x7e1
+.debug_str      0x00000000      0x7ac
  *(.debug_str)
  .debug_str     0x00000000      0x371 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega32u4/avr5/crtatmega32u4.o
  .debug_str     0x00000371      0x190 direction.o
                                 0x1c4 (size before relaxing)
  .debug_str     0x00000501       0x25 main.o
                                 0x19e (size before relaxing)
- .debug_str     0x00000526      0x172 motion_control.o
-                                0x2d0 (size before relaxing)
- .debug_str     0x00000698       0x6d scurve.o
-                                0x221 (size before relaxing)
- .debug_str     0x00000705       0x11 trapezoid.o
-                                0x21a (size before relaxing)
- .debug_str     0x00000716       0xcb velocity.o
-                                0x27b (size before relaxing)
+ .debug_str     0x00000526      0x13d motion_control.o
+                                0x2de (size before relaxing)
+ .debug_str     0x00000663       0x6d scurve.o
+                                0x22f (size before relaxing)
+ .debug_str     0x000006d0       0x11 trapezoid.o
+                                0x228 (size before relaxing)
+ .debug_str     0x000006e1       0xcb velocity.o
+                                0x289 (size before relaxing)
 
 .debug_loc      0x00000000     0x104d
  *(.debug_loc)
