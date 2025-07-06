@@ -60,3 +60,4 @@ This project controls two stepper motors using an ATmega32U4-based microcontroll
 - V3 - Added motion_control which implements moving a given distance according to a given velocity curve
 - V4 - Added differential drive and turn angle functions
 - V7 - Corrected Move Distance Function
+- V8 - Corrected Turn Angle code
