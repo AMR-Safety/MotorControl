@@ -62,3 +62,5 @@ This project controls two stepper motors using an ATmega32U4-based microcontroll
 - V7 - Corrected Move Distance Function
 - V8 - Corrected Turn Angle code
 - V9 - Corrected Drive differential Code
+- RemoteControl - Uses V7 to convert arrow key commands in mini pc to distance commands 
+- V8_ContinuousRemoteControl - Uses V8 to convert continuous arrow key commands into velocity commands.
